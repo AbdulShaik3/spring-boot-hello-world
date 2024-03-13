@@ -26,12 +26,18 @@ jobs:
       - name: Build Docker image
         run: |
           docker build -t my-image .
-          docker tag my-image:latest my-registry/my-image:latest
+          docker tag my-image:latest $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-image:latest
 
-      - name: Push Docker image to registry
+      - name: Log in to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry: ${{ secrets.AWS_REGISTRY }}
+
+      - name: Push Docker image to ECR
         run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          docker push my-registry/my-image:latest
+            docker push $AWS_ACCOUNT_ID.dkr.ecr.$AWS_REGION.amazonaws.com/my-image:latest
+
 
   deploy:
     runs-on: ubuntu-latest
